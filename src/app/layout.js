@@ -7,6 +7,7 @@ import ErrorBoundaryWrapper from '@/components/shared/ErrorBoundary';
 import NotificationManager from '@/components/shared/NotificationManager';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Script from 'next/script';
 
 export const metadata = {
   title: "SmartPresentation - تسجيل الدخول",
@@ -16,6 +17,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="ar" dir="rtl">
+
       <body>
         <ReduxProvider>
           <ErrorBoundaryWrapper>
