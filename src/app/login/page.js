@@ -11,7 +11,7 @@ export default function LoginPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    
+
     const dispatch = useAppDispatch();
     const { loading } = useAppSelector((state) => state.auth);
 
@@ -21,7 +21,7 @@ export default function LoginPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!username || !password) {
             NotificationService.showWarning('تحذير', 'يرجى إدخال اسم المستخدم وكلمة المرور');
             return;
@@ -34,7 +34,7 @@ export default function LoginPage() {
     return (
         <div className={styles.loginPage}>
             <div className={styles.patternBg}></div>
-            
+
             <div className={styles.loginContainer}>
                 <div className={styles.loginHeader}>
                     <div className={styles.logoSection}>
@@ -42,10 +42,13 @@ export default function LoginPage() {
                             <Shield size={40} />
                         </div>
                     </div>
-                    <h1>نظام الدخول الموحد</h1>
-                    <p>مرحباً بعودتك إلى المنصة</p>
+                    <h1>SPP</h1>
+                    <h1>منصة العروض التقديمية الذكية</h1>
+                    <h2>Smart Presentation Platform</h2>
+                    <h3>تسجيل الدخول</h3>
+
                 </div>
-                
+
                 <form className={styles.loginForm} onSubmit={handleSubmit}>
                     <div className={styles.formGroup}>
                         <label htmlFor="username">اسم المستخدم</label>
@@ -63,7 +66,7 @@ export default function LoginPage() {
                             <User size={18} />
                         </div>
                     </div>
-                    
+
                     <div className={styles.formGroup}>
                         <label htmlFor="password">كلمة المرور</label>
                         <div className={styles.inputWrapper}>
@@ -87,7 +90,7 @@ export default function LoginPage() {
                             </button>
                         </div>
                     </div>
-                    
+
                     <button
                         type="submit"
                         className={`${styles.loginBtn} ${loading ? styles.loading : ''}`}

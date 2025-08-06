@@ -29,9 +29,11 @@
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     width: 100%;
-    max-width: 460px;
+    max-width: 900px;
     overflow: hidden;
     animation: fadeIn 0.6s ease-out;
+    display: flex;
+    flex-direction: row;
 }
 
 @keyframes fadeIn {
@@ -50,6 +52,11 @@
     padding: 40px 30px;
     text-align: center;
     position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .loginHeader::after {
@@ -83,11 +90,31 @@
 }
 
 .loginHeader h1 {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 700;
     color: white;
     margin-bottom: 8px;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    line-height: 1.3;
+}
+
+.loginHeader h2 {
+    font-size: 18px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 6px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
+}
+
+.loginHeader h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 12px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
+    letter-spacing: 2px;
 }
 
 .loginHeader p {
@@ -99,11 +126,18 @@
 
 .loginForm {
     padding: 40px 35px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .formGroup {
-    margin-bottom: 25px;
+    margin-bottom: 30px;
+    position: relative;
 }
+
+
 
 .formGroup label {
     display: block;
@@ -121,14 +155,16 @@
 .formControl {
     width: 100%;
     padding: 15px 50px 15px 50px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    border: none;
+    border-bottom: 2px solid #e0e0e0;
+    border-radius: 0;
     font-size: 16px;
     color: #333;
     transition: all 0.3s ease;
-    background: #fafafa;
+    background: transparent;
     position: relative;
     font-family: 'Tajawal', sans-serif;
+    outline: none;
 }
 
 /* تنسيق خاص لحقل كلمة المرور */
@@ -140,13 +176,20 @@
 
 .formControl::placeholder {
     color: #999;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.formControl:focus::placeholder {
+    opacity: 0.5;
 }
 
 .formControl:focus {
     outline: none;
-    border-color: #00a652;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(0, 166, 82, 0.1);
+    border-bottom-color: #00a652;
+    background: transparent;
+    box-shadow: none;
+    transform: translateY(-2px);
 }
 
 /* تحسين الخط السفلي للحقل */
@@ -155,8 +198,8 @@
 }
 
 .formControl:focus {
-    border-color: #00a652;
-    box-shadow: 0 0 0 3px rgba(0, 166, 82, 0.1);
+    border-bottom-color: #00a652;
+    box-shadow: none;
 }
 
 .inputWrapper svg {
@@ -164,13 +207,15 @@
     right: 18px;
     top: 50%;
     transform: translateY(-50%);
-    color: #00a652;
+    color: #999;
     transition: all 0.3s;
+    opacity: 0.7;
 }
 
 .formControl:focus ~ svg {
-    color: #00694e;
+    color: #00a652;
     transform: translateY(-50%) scale(1.1);
+    opacity: 1;
 }
 
 /* أيقونة إظهار/إخفاء كلمة المرور داخل الحقل */
@@ -181,7 +226,7 @@
     transform: translateY(-50%);
     cursor: pointer;
     color: #999;
-    transition: color 0.3s ease;
+    transition: all 0.3s ease;
     z-index: 10;
     background: none;
     border: none;
@@ -192,10 +237,13 @@
     justify-content: center;
     width: 32px;
     height: 32px;
+    opacity: 0.7;
 }
 
 .passwordToggle:hover {
     color: #00a652;
+    opacity: 1;
+    background: transparent;
 }
 
 .passwordToggle:focus {
@@ -325,7 +373,7 @@
 }
 
 /* تصميم متجاوب */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .loginContainer {
         max-width: 100%;
         border-radius: 0;
@@ -336,10 +384,19 @@
     
     .loginHeader {
         padding: 35px 25px;
+        flex: none;
     }
     
     .loginHeader h1 {
-        font-size: 24px;
+        font-size: 20px;
+    }
+    
+    .loginHeader h2 {
+        font-size: 16px;
+    }
+    
+    .loginHeader h3 {
+        font-size: 14px;
     }
     
     .loginForm {
@@ -365,11 +422,30 @@
         padding-right: 45px;
         padding-left: 45px;
     }
+    
+
 }
 
 /* تأثيرات التركيز المتقدمة */
 .formGroup {
     position: relative;
+}
+
+/* تأثير النبض للحقول عند التركيز */
+@keyframes fieldPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.formGroup:focus-within {
+    animation: fieldPulse 0.3s ease;
 }
 
 /* تأثير النبض للأيقونات */
@@ -392,7 +468,11 @@
 /* تأثير خاص لأيقونة كلمة المرور عند التركيز */
 .formControl:focus ~ .passwordToggle {
     color: #00a652;
+    opacity: 1;
+    background: transparent;
 }
+
+
 
 /* تنسيق الأيقونة */
 .passwordToggle svg {
@@ -400,6 +480,15 @@
     height: 16px;
     display: block;
     transition: transform 0.3s ease;
+}
+
+/* تأثيرات إضافية للحقول */
+.formControl:hover {
+    border-bottom-color: #ccc;
+}
+
+.formControl:focus {
+    border-bottom-width: 3px;
 }
 
 
