@@ -61,11 +61,22 @@ apiClient.interceptors.response.use(
       // Network error - الخادم مغلق أو لا يمكن الوصول إليه
       if (error.code === 'ECONNABORTED') {
         error.message = 'انتهت مهلة الاتصال بالخادم. يرجى المحاولة مرة أخرى.';
-      } else if (error.message.includes('Network Error')) {
+        error.isNetworkError = true;
+      } else if (error.message.includes('Network Error') || error.message.includes('ERR_NETWORK')) {
         error.message = 'لا يمكن الاتصال بالخادم. يرجى التأكد من أن الخادم يعمل بشكل صحيح.';
+        // إضافة علامة خاصة لأخطاء الشبكة لمنع إعادة المحاولة
+        error.isNetworkError = true;
       } else {
         error.message = ERROR_MESSAGES.NETWORK_ERROR;
+        error.isNetworkError = true;
       }
+      
+      // إضافة معلومات إضافية لتتبع أخطاء الشبكة
+      console.warn('خطأ في الشبكة:', {
+        message: error.message,
+        code: error.code,
+        config: error.config?.url
+      });
     } else {
       // Other errors
       error.message = error.message || ERROR_MESSAGES.UNKNOWN_ERROR;

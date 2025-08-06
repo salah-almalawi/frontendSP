@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { loginUser } from '@/store/slices/authSlice';
 import NotificationService from '@/services/notificationService';
@@ -13,16 +12,8 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     
-    const router = useRouter();
     const dispatch = useAppDispatch();
-    const { loading, isAuthenticated } = useAppSelector((state) => state.auth);
-
-    // Redirect to dashboard if already authenticated
-    useEffect(() => {
-        if (isAuthenticated) {
-            router.push('/dashboard');
-        }
-    }, [isAuthenticated, router]);
+    const { loading } = useAppSelector((state) => state.auth);
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -36,13 +27,8 @@ export default function LoginPage() {
             return;
         }
 
-        const result = await dispatch(loginUser({ username, password }));
-        
-        if (loginUser.fulfilled.match(result)) {
-            NotificationService.showLoginSuccess();
-            router.push('/dashboard');
-        }
-        // إذا كان هناك خطأ، سيتعامل معه NotificationManager تلقائياً
+        await dispatch(loginUser({ username, password }));
+        // لا نحتاج للتوجيه اليدوي - AuthGuard سيتعامل مع ذلك
     };
 
     return (

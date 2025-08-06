@@ -8,8 +8,9 @@ import NotificationService from '@/services/notificationService';
 export default function NotificationManager() {
   const dispatch = useAppDispatch();
   const authError = useAppSelector((state) => state.auth.error);
-  const { loading, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { loading, isAuthenticated, user } = useAppSelector((state) => state.auth);
   const lastErrorRef = useRef(null);
+  const lastAuthStateRef = useRef({ isAuthenticated: false, user: null });
 
   useEffect(() => {
     if (authError && authError !== lastErrorRef.current) {
@@ -29,12 +30,18 @@ export default function NotificationManager() {
     }
   }, [authError, dispatch]);
 
-  // تم إزالة رسالة نجاح تسجيل الدخول لتجنب التكرار
-  // useEffect(() => {
-  //   if (isAuthenticated && !loading) {
-  //     NotificationService.showLoginSuccess();
-  //   }
-  // }, [isAuthenticated, loading]);
+  // إظهار رسالة نجاح تسجيل الدخول
+  useEffect(() => {
+    const currentState = { isAuthenticated, user };
+    const lastState = lastAuthStateRef.current;
+    
+    // إذا أصبح المستخدم مصادق عليه حديثاً (لم يكن مصادق عليه من قبل)
+    if (isAuthenticated && user && !lastState.isAuthenticated && !loading) {
+      NotificationService.showLoginSuccess();
+    }
+    
+    lastAuthStateRef.current = currentState;
+  }, [isAuthenticated, user, loading]);
 
   return null; // هذا المكون لا يعرض أي شيء مرئي
 } 

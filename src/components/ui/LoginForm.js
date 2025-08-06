@@ -13,14 +13,19 @@ export default function LoginForm() {
   const router = useRouter();
   
   const dispatch = useAppDispatch();
-  const { loading, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { loading, isAuthenticated, initialized } = useAppSelector((state) => state.auth);
 
   // Redirect to dashboard if already authenticated
   useEffect(() => {
+    // انتظار التهيئة قبل اتخاذ أي قرار
+    if (!initialized) {
+      return;
+    }
+
     if (isAuthenticated) {
       router.push('/dashboard');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, initialized]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,38 +44,50 @@ export default function LoginForm() {
     // إذا كان هناك خطأ، سيتعامل معه NotificationManager تلقائياً
   };
 
+  // إظهار شاشة التحميل حتى يتم التهيئة
+  if (!initialized) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner}></div>
+      </div>
+    );
+  }
+
   return (
-    <div className={styles.loginContainer}>
-      <div className={styles.loginForm}>
-        <h2 className={styles.title}>
-          تسجيل الدخول
-        </h2>
-        <form className={styles.form} onSubmit={handleSubmit}>
+    <div className={styles.container}>
+      <div className={styles.formContainer}>
+        <h1 className={styles.title}>تسجيل الدخول</h1>
+        <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.inputGroup}>
+            <label htmlFor="username" className={styles.label}>
+              اسم المستخدم
+            </label>
             <input
-              id="username"
-              name="username"
               type="text"
-              required
-              className={styles.input}
-              placeholder="اسم المستخدم"
+              id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              className={styles.input}
+              placeholder="أدخل اسم المستخدم"
+              required
             />
           </div>
+          
           <div className={styles.inputGroup}>
+            <label htmlFor="password" className={styles.label}>
+              كلمة المرور
+            </label>
             <input
-              id="password"
-              name="password"
               type="password"
-              required
-              className={styles.input}
-              placeholder="كلمة المرور"
+              id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              className={styles.input}
+              placeholder="أدخل كلمة المرور"
+              required
             />
           </div>
-
+          
           <button
             type="submit"
             disabled={loading}

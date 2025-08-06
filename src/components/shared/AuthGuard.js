@@ -1,23 +1,46 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAppSelector } from '@/store/hooks';
 import styles from './AuthGuard.module.css';
 
 export default function AuthGuard({ children }) {
-  const { loading, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { loading, isAuthenticated, initialized } = useAppSelector((state) => state.auth);
   const router = useRouter();
   const pathname = usePathname();
+  const hasRedirected = useRef(false);
+  const lastPathname = useRef(pathname);
 
   useEffect(() => {
-    // إذا لم يكن المستخدم مسجل دخول وليس في صفحة تسجيل الدخول
-    if (!loading && !isAuthenticated && pathname !== '/login') {
-      router.push('/login');
+    // انتظار التهيئة قبل اتخاذ أي قرار
+    if (!initialized) {
+      return;
     }
-  }, [loading, isAuthenticated, pathname, router]);
 
-  if (loading) {
+    // إذا كان المستخدم مسجل دخول وهو في صفحة تسجيل الدخول، اوجهه للداشبورد
+    if (!loading && isAuthenticated && pathname === '/login' && !hasRedirected.current) {
+      hasRedirected.current = true;
+      router.push('/dashboard');
+      return;
+    }
+
+    // إذا لم يكن المستخدم مسجل دخول وليس في صفحة تسجيل الدخول
+    if (!loading && !isAuthenticated && pathname !== '/login' && !hasRedirected.current) {
+      hasRedirected.current = true;
+      router.push('/login');
+      return;
+    }
+
+    // إعادة تعيين العلامة إذا تغير المسار
+    if (pathname !== lastPathname.current) {
+      lastPathname.current = pathname;
+      hasRedirected.current = false;
+    }
+  }, [loading, isAuthenticated, pathname, router, initialized]);
+
+  // إظهار شاشة التحميل حتى يتم التهيئة
+  if (!initialized || loading) {
     return (
       <div className={styles.loadingContainer}>
         <div className={styles.spinner}></div>
@@ -28,11 +51,6 @@ export default function AuthGuard({ children }) {
   // إذا لم يكن مسجل دخول وليس في صفحة تسجيل الدخول، لا تعرض أي شيء
   if (!isAuthenticated && pathname !== '/login') {
     return null;
-  }
-
-  // إذا كان مسجل دخول وهو في صفحة تسجيل الدخول، اترك LoginForm يتعامل مع التوجيه
-  if (isAuthenticated && pathname === '/login') {
-    return <>{children}</>;
   }
 
   return <>{children}</>;

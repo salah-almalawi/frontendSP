@@ -15,7 +15,7 @@ export default function ProfilePage() {
     const result = await dispatch(logoutUser());
     if (logoutUser.fulfilled.match(result)) {
       NotificationService.showLogoutSuccess();
-      router.push('/login');
+      // لا نحتاج للتوجيه اليدوي - AuthGuard سيتعامل مع ذلك تلقائياً
     }
   };
 

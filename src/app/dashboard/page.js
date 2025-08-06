@@ -12,10 +12,14 @@ export default function DashboardPage() {
   const { user, loading } = useAppSelector((state) => state.auth);
 
   const handleLogout = async () => {
-    const result = await dispatch(logoutUser());
-    if (logoutUser.fulfilled.match(result)) {
-      NotificationService.showLogoutSuccess();
-      router.push('/login');
+    try {
+      const result = await dispatch(logoutUser());
+      if (logoutUser.fulfilled.match(result)) {
+        NotificationService.showLogoutSuccess();
+        // لا نحتاج للتوجيه اليدوي - AuthGuard سيتعامل مع ذلك
+      }
+    } catch (error) {
+      console.error('خطأ في تسجيل الخروج:', error);
     }
   };
 

@@ -69,6 +69,13 @@ export const getCurrentUser = async () => {
       return null;
     }
 
+    // التحقق من صحة التوكن قبل محاولة الاتصال
+    if (!isValidToken(token)) {
+      console.warn('التوكن غير صالح، حذفه...');
+      removeToken();
+      return null;
+    }
+
     const response = await apiClient.get('/api/auth/me');
     return response.data;
   } catch (error) {
@@ -80,6 +87,12 @@ export const getCurrentUser = async () => {
       return null; // نعيد null بدلاً من رمي الخطأ
     }
     
+    // إذا كان خطأ شبكة، لا نعيد رمي الخطأ لمنع إعادة المحاولة
+    if (error.isNetworkError) {
+      console.warn('خطأ في الشبكة - لا يمكن الاتصال بالخادم');
+      return null; // نعيد null بدلاً من رمي الخطأ
+    }
+    
     // إعادة رمي الخطأ ليتم التعامل معه في المكونات
     throw error;
   }
@@ -88,6 +101,18 @@ export const getCurrentUser = async () => {
 // التحقق من وجود توكن صالح
 export const isAuthenticated = () => {
   return getToken() !== null;
+};
+
+// التحقق من صحة التوكن (اختياري - للتحقق من التنسيق)
+export const isValidToken = (token) => {
+  if (!token) return false;
+  
+  // التحقق من أن التوكن يحتوي على 3 أجزاء (header.payload.signature)
+  const parts = token.split('.');
+  if (parts.length !== 3) return false;
+  
+  // التحقق من أن التوكن ليس فارغاً
+  return parts.every(part => part.length > 0);
 };
 
 // دالة مساعدة للتعامل مع أخطاء الشبكة (للتوافق مع الكود القديم)
