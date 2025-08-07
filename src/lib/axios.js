@@ -1,21 +1,21 @@
 import axios from 'axios';
-import { store } from '../store/store'; // استيراد store للوصول إلى dispatch
-import { logout } from '../store/slices/authSlice'; // استيراد أكشن تسجيل الخروج
+import { API_CONFIG } from '../config/api'; // استيراد إعدادات API
 
 // إنشاء نسخة axios أساسية
 const apiClient = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api', // يمكنك وضع الرابط الأساسي هنا
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: API_CONFIG.BASE_URL, // استخدام BASE_URL من إعدادات API
+  timeout: API_CONFIG.TIMEOUT,
+  headers: API_CONFIG.HEADERS,
 });
+
+
 
 // معترض الطلبات (Request Interceptor)
 // هذا الكود سيعمل قبل إرسال أي طلب
 apiClient.interceptors.request.use(
   (config) => {
-    // الحصول على التوكن من حالة Redux أو localStorage
-    const token = store.getState().auth.token || localStorage.getItem('token');
+    // الحصول على التوكن من localStorage مباشرة
+    const token = localStorage.getItem('token');
 
     // إذا كان التوكن موجودًا، قم بإضافته إلى رأس الطلب
     if (token) {
@@ -40,11 +40,15 @@ apiClient.interceptors.response.use(
   (error) => {
     // التحقق مما إذا كان الخطأ هو 401 (غير مصرح به)
     if (error.response && error.response.status === 401) {
-      // إذا حدث خطأ 401، قم بتسجيل خروج المستخدم
-      // هذا يضمن تنظيف الحالة وإزالة التوكن من localStorage
-      store.dispatch(logout());
-      // يمكنك أيضًا إعادة توجيه المستخدم إلى صفحة تسجيل الدخول إذا أردت
-      // window.location.href = '/login';
+      console.log('401 Unauthorized error detected. Clearing localStorage and redirecting to login.');
+      // إذا حدث خطأ 401، قم بحذف التوكن من localStorage
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
+      // إعادة توجيه المستخدم إلى صفحة تسجيل الدخول
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
     }
 
     // إرجاع الخطأ ليتم التعامل معه في المكان الذي تم فيه استدعاء الطلب

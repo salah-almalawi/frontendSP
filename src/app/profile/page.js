@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import useLogout from '@/hooks/useLogout'; // استيراد خطاف useLogout
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logout } from '@/store/slices/authSlice';
 import NotificationService from '@/services/notificationService';
@@ -8,14 +9,8 @@ import styles from './Profile.module.css';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const dispatch = useAppDispatch();
   const { user, loading } = useAppSelector((state) => state.auth);
-
-  const handleLogout = () => {
-    dispatch(logout());
-    NotificationService.showLogoutSuccess();
-    // AuthGuard will handle the redirect automatically
-  };
+  const handleLogout = useLogout(); // استخدام خطاف useLogout
 
   const handleBackToDashboard = () => {
     router.push('/dashboard');

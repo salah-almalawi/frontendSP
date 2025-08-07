@@ -2,7 +2,7 @@
 
 import { Component } from 'react';
 import { useAppDispatch } from '@/store/hooks';
-import { clearAuth } from '@/store/slices/authSlice';
+import { logout } from '@/store/slices/authSlice';
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -22,7 +22,7 @@ class ErrorBoundary extends Component {
     this.setState({ hasError: false, error: null });
     // Clear auth state if there's an authentication error
     if (this.state.error?.message?.includes('auth')) {
-      this.props.dispatch(clearAuth());
+      this.props.dispatch(logout());
     }
   };
 

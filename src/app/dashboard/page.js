@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import useLogout from '@/hooks/useLogout'; // استيراد خطاف useLogout
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logout } from '@/store/slices/authSlice';
 import NotificationService from '@/services/notificationService';
@@ -8,19 +9,8 @@ import styles from './Dashboard.module.css';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const dispatch = useAppDispatch();
   const { user, loading } = useAppSelector((state) => state.auth);
-
-  const handleLogout = () => {
-    try {
-      dispatch(logout());
-      NotificationService.showLogoutSuccess();
-      // AuthGuard سيتولى إعادة التوجيه تلقائيًا
-    } catch (error) {
-      console.error('خطأ في تسجيل الخروج:', error);
-      // يمكنك إظهار إشعار خطأ هنا إذا أردت
-    }
-  };
+  const handleLogout = useLogout(); // استخدام خطاف useLogout
 
   const handleProfileClick = () => {
     router.push('/profile');

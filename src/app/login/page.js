@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { loginUser } from '@/store/slices/authSlice';
 import NotificationService from '@/services/notificationService';
 import { Shield, User, Lock, Eye, EyeOff } from 'lucide-react';
 import styles from './page.module.css';
+import { useRouter } from 'next/navigation'; // استيراد useRouter
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');
@@ -13,7 +14,23 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
 
     const dispatch = useAppDispatch();
-    const { loading } = useAppSelector((state) => state.auth);
+    const { loading, isAuthenticated, error } = useAppSelector((state) => state.auth); // إضافة isAuthenticated و error
+    const router = useRouter(); // تهيئة useRouter
+
+    // useEffect لإعادة التوجيه إذا كان المستخدم مصادقًا بالفعل
+    useEffect(() => {
+        if (isAuthenticated) {
+            // router.replace('/dashboard'); // تم التعليق مؤقتاً لتشخيص مشكلة تحديث الصفحة
+        }
+    }, [isAuthenticated, router]);
+
+    // useEffect لعرض الأخطاء من Redux store
+    useEffect(() => {
+        if (error) {
+            console.log('Error detected in Redux store:', error); // إضافة console.log
+            NotificationService.showError('خطأ في تسجيل الدخول', error);
+        }
+    }, [error]);
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -27,8 +44,16 @@ export default function LoginPage() {
             return;
         }
 
-        await dispatch(loginUser({ username, password }));
-        // لا نحتاج للتوجيه اليدوي - AuthGuard سيتعامل مع ذلك
+        console.log('Attempting login for user:', username); // إضافة console.log
+        const resultAction = await dispatch(loginUser({ username, password }));
+        
+        // التحقق من نجاح تسجيل الدخول وإعادة التوجيه
+        if (loginUser.fulfilled.match(resultAction)) {
+            console.log('Login successful, redirecting to dashboard.'); // إضافة console.log
+            // router.push('/dashboard'); // تم التعليق مؤقتاً لتشخيص مشكلة تحديث الصفحة
+        } else {
+            console.log('Login failed, resultAction:', resultAction); // إضافة console.log
+        }
     };
 
     return (
