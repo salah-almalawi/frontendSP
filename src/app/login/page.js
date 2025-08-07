@@ -44,6 +44,11 @@ export default function LoginPage() {
             return;
         }
 
+        // تنظيف أي توكن قديم قبل محاولة تسجيل الدخول
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        dispatch(logout());
+
         console.log('Attempting login for user:', username);
         const resultAction = await dispatch(loginUser({ username, password }));
 
@@ -53,6 +58,7 @@ export default function LoginPage() {
             router.push('/dashboard');
         } else if (loginUser.rejected.match(resultAction)) {
             console.log('Login failed, resultAction:', resultAction);
+            dispatch(logout()); // تأكيد تنظيف حالة Redux في حالة الفشل
             NotificationService.showLoginError(resultAction.payload || 'فشل تسجيل الدخول');
         }
     };
