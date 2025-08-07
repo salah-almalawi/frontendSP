@@ -40,7 +40,13 @@ apiClient.interceptors.response.use(
       // لا حاجة لحذف التوكن من localStorage بعد الآن
       // إعادة توجيه المستخدم إلى صفحة تسجيل الدخول
       if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+        const currentPath = window.location.pathname;
+        const requestUrl = error.config.url;
+
+        // تجنب إعادة التوجيه إذا كنا بالفعل في صفحة تسجيل الدخول أو كان الطلب لـ /auth/me
+        if (currentPath !== '/login' && !requestUrl.includes('/auth/me')) {
+          window.location.href = '/login';
+        }
       }
     }
 

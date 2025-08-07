@@ -24,6 +24,11 @@ export default function LoginPage() {
     //     }
     // }, [isAuthenticated, router]);
 
+    // useEffect لتنظيف الأخطاء عند تحميل الصفحة لمنع ظهور إشعار الخطأ قبل محاولة تسجيل الدخول
+    useEffect(() => {
+        dispatch(clearError());
+    }, [dispatch]); // يتم التنفيذ مرة واحدة عند تحميل المكون
+
     // useEffect لعرض الأخطاء من Redux store
     useEffect(() => {
         if (error) {
