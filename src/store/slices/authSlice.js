@@ -12,9 +12,14 @@ export const loginUser = createAsyncThunk(
       console.log("Server response data:", response.data); // طباعة استجابة الخادم بالكامل
       const { token } = response.data; // استخراج التوكن فقط
 
+      // التحقق من وجود التوكن - إذا لم يكن موجود، فشل تسجيل الدخول
+      if (!token) {
+        return rejectWithValue('بيانات تسجيل الدخول غير صحيحة');
+      }
+
       // بما أن معلومات المستخدم لا تظهر في الاستجابة، سنفترض أنها غير متوفرة هنا
       // يمكنك تعديل هذا لاحقًا إذا كان الخادم يرسل معلومات المستخدم تحت مفتاح آخر
-      const user = null; 
+      const user = null;
 
       // حفظ التوكن في localStorage لضمان بقاء الجلسة
       localStorage.setItem('token', token); // استخدام token
