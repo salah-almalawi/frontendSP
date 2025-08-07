@@ -44,18 +44,18 @@ export default function LoginPage() {
             return;
         }
 
-        console.log('Attempting login for user:', username); // إضافة console.log
+        console.log('Attempting login for user:', username);
         const resultAction = await dispatch(loginUser({ username, password }));
-        
+
         // التحقق من نجاح تسجيل الدخول وإعادة التوجيه
         if (loginUser.fulfilled.match(resultAction)) {
-            console.log('Login successful, redirecting to dashboard.'); // إضافة console.log
-            // router.push('/dashboard'); // تم التعليق مؤقتاً لتشخيص مشكلة تحديث الصفحة
-        } else {
-            console.log('Login failed, resultAction:', resultAction); // إضافة console.log
+            console.log('Login successful, redirecting to dashboard.');
+            router.push('/dashboard');
+        } else if (loginUser.rejected.match(resultAction)) {
+            console.log('Login failed, resultAction:', resultAction);
+            NotificationService.showLoginError(resultAction.payload || 'فشل تسجيل الدخول');
         }
     };
-
     return (
         <div className={styles.loginPage}>
             <div className={styles.patternBg}></div>
