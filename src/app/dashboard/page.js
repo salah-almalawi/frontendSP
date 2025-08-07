@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { logoutUser } from '@/store/slices/authSlice';
+import { logout } from '@/store/slices/authSlice';
 import NotificationService from '@/services/notificationService';
 import styles from './Dashboard.module.css';
 
@@ -11,15 +11,14 @@ export default function DashboardPage() {
   const dispatch = useAppDispatch();
   const { user, loading } = useAppSelector((state) => state.auth);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     try {
-      const result = await dispatch(logoutUser());
-      if (logoutUser.fulfilled.match(result)) {
-        NotificationService.showLogoutSuccess();
-        // لا نحتاج للتوجيه اليدوي - AuthGuard سيتعامل مع ذلك
-      }
+      dispatch(logout());
+      NotificationService.showLogoutSuccess();
+      // AuthGuard سيتولى إعادة التوجيه تلقائيًا
     } catch (error) {
       console.error('خطأ في تسجيل الخروج:', error);
+      // يمكنك إظهار إشعار خطأ هنا إذا أردت
     }
   };
 

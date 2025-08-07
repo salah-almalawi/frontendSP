@@ -1,102 +1,59 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { loginUser } from '@/store/slices/authSlice';
-import NotificationService from '@/services/notificationService';
+import { useState } from 'react';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { loginUser } from '../../store/slices/authSlice';
 import styles from './LoginForm.module.css';
 
-export default function LoginForm() {
-  const [username, setUsername] = useState('');
+const LoginForm = () => {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const router = useRouter();
-  
   const dispatch = useAppDispatch();
-  const { loading, isAuthenticated, initialized } = useAppSelector((state) => state.auth);
+  const router = useRouter();
 
-  // Redirect to dashboard if already authenticated
-  useEffect(() => {
-    // انتظار التهيئة قبل اتخاذ أي قرار
-    if (!initialized) {
-      return;
-    }
-
-    if (isAuthenticated) {
-      router.push('/dashboard');
-    }
-  }, [isAuthenticated, router, initialized]);
+  // الحصول على حالة المصادقة من Redux store
+  const { loading, error, isAuthenticated } = useSelector((state) => state.auth);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!username || !password) {
-      NotificationService.showWarning('تحذير', 'يرجى إدخال اسم المستخدم وكلمة المرور');
-      return;
-    }
-
-    const result = await dispatch(loginUser({ username, password }));
-    
-    if (loginUser.fulfilled.match(result)) {
-      NotificationService.showLoginSuccess();
-      router.push('/dashboard');
-    }
-    // إذا كان هناك خطأ، سيتعامل معه NotificationManager تلقائياً
+    // استدعاء الأكشن للتعامل مع تسجيل الدخول
+    // createAsyncThunk سيتولى الباقي (طلب API, تحديث الحالة, معالجة الأخطاء)
+    dispatch(loginUser({ email, password })).then((result) => {
+      // التحقق مما إذا كان تسجيل الدخول ناجحًا
+      if (loginUser.fulfilled.match(result)) {
+        router.push('/dashboard'); // إعادة التوجيه بعد النجاح
+      }
+    });
   };
 
-  // إظهار شاشة التحميل حتى يتم التهيئة
-  if (!initialized) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.spinner}></div>
-      </div>
-    );
-  }
-
   return (
-    <div className={styles.container}>
-      <div className={styles.formContainer}>
-        <h1 className={styles.title}>تسجيل الدخول</h1>
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.inputGroup}>
-            <label htmlFor="username" className={styles.label}>
-              اسم المستخدم
-            </label>
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className={styles.input}
-              placeholder="أدخل اسم المستخدم"
-              required
-            />
-          </div>
-          
-          <div className={styles.inputGroup}>
-            <label htmlFor="password" className={styles.label}>
-              كلمة المرور
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={styles.input}
-              placeholder="أدخل كلمة المرور"
-              required
-            />
-          </div>
-          
-          <button
-            type="submit"
-            disabled={loading}
-            className={styles.submitButton}
-          >
-            {loading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
-          </button>
-        </form>
+    <form onSubmit={handleSubmit} className={styles.form}>
+      <div className={styles.inputGroup}>
+        <label htmlFor="email">البريد الإلكتروني</label>
+        <input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
       </div>
-    </div>
+      <div className={styles.inputGroup}>
+        <label htmlFor="password">كلمة المرور</label>
+        <input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+      {error && <p className={styles.error}>{error}</p>}
+      <button type="submit" disabled={loading} className={styles.button}>
+        {loading ? 'جارِ تسجيل الدخول...' : 'تسجيل الدخول'}
+      </button>
+    </form>
   );
-} 
+};
+
+export default LoginForm;

@@ -1,57 +1,43 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAppSelector } from '@/store/hooks';
-import styles from './AuthGuard.module.css';
+import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { useRouter } from 'next/navigation';
+import styles from './AuthGuard.module.css'; // لإضافة شاشة تحميل
 
-export default function AuthGuard({ children }) {
-  const { loading, isAuthenticated, initialized } = useAppSelector((state) => state.auth);
+const AuthGuard = ({ children }) => {
   const router = useRouter();
-  const pathname = usePathname();
-  const hasRedirected = useRef(false);
-  const lastPathname = useRef(pathname);
+  const { isAuthenticated, loading } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    // انتظار التهيئة قبل اتخاذ أي قرار
-    if (!initialized) {
+    // لا تقم بإعادة التوجيه أثناء التحميل الأولي
+    if (loading) {
       return;
     }
 
-    // إذا كان المستخدم مسجل دخول وهو في صفحة تسجيل الدخول، اوجهه للداشبورد
-    if (!loading && isAuthenticated && pathname === '/login' && !hasRedirected.current) {
-      hasRedirected.current = true;
-      router.push('/dashboard');
-      return;
+    // إذا انتهى التحميل والمستخدم غير مصادق، قم بإعادة التوجيه
+    if (!isAuthenticated) {
+      router.replace('/login');
     }
+  }, [isAuthenticated, loading, router]);
 
-    // إذا لم يكن المستخدم مسجل دخول وليس في صفحة تسجيل الدخول
-    if (!loading && !isAuthenticated && pathname !== '/login' && !hasRedirected.current) {
-      hasRedirected.current = true;
-      router.push('/login');
-      return;
-    }
-
-    // إعادة تعيين العلامة إذا تغير المسار
-    if (pathname !== lastPathname.current) {
-      lastPathname.current = pathname;
-      hasRedirected.current = false;
-    }
-  }, [loading, isAuthenticated, pathname, router, initialized]);
-
-  // إظهار شاشة التحميل حتى يتم التهيئة
-  if (!initialized || loading) {
+  // أثناء التحقق الأولي، أظهر شاشة تحميل لتجنب وميض المحتوى
+  if (loading) {
     return (
       <div className={styles.loadingContainer}>
         <div className={styles.spinner}></div>
+        <p>جارِ التحقق من المصادقة...</p>
       </div>
     );
   }
 
-  // إذا لم يكن مسجل دخول وليس في صفحة تسجيل الدخول، لا تعرض أي شيء
-  if (!isAuthenticated && pathname !== '/login') {
-    return null;
+  // إذا كان المستخدم مصادقًا، أظهر المحتوى المحمي
+  if (isAuthenticated) {
+    return <>{children}</>;
   }
 
-  return <>{children}</>;
-} 
+  // في حالة عدم المصادقة، لا تعرض أي شيء (سيتم إعادة التوجيه)
+  return null;
+};
+
+export default AuthGuard;

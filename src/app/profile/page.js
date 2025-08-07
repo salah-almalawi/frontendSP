@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { logoutUser } from '@/store/slices/authSlice';
+import { logout } from '@/store/slices/authSlice';
 import NotificationService from '@/services/notificationService';
 import styles from './Profile.module.css';
 
@@ -11,12 +11,10 @@ export default function ProfilePage() {
   const dispatch = useAppDispatch();
   const { user, loading } = useAppSelector((state) => state.auth);
 
-  const handleLogout = async () => {
-    const result = await dispatch(logoutUser());
-    if (logoutUser.fulfilled.match(result)) {
-      NotificationService.showLogoutSuccess();
-      // لا نحتاج للتوجيه اليدوي - AuthGuard سيتعامل مع ذلك تلقائياً
-    }
+  const handleLogout = () => {
+    dispatch(logout());
+    NotificationService.showLogoutSuccess();
+    // AuthGuard will handle the redirect automatically
   };
 
   const handleBackToDashboard = () => {
