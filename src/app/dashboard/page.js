@@ -3,8 +3,7 @@
 import { useRouter } from 'next/navigation';
 import useLogout from '@/hooks/useLogout'; // استيراد خطاف useLogout
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { logout } from '@/store/slices/authSlice';
-import NotificationService from '@/services/notificationService';
+
 import styles from './Dashboard.module.css';
 
 export default function DashboardPage() {

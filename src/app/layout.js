@@ -1,25 +1,8 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { rehydrateAuth } from '../store/slices/authSlice';
 import { ReduxProvider } from '../components/shared/ReduxProvider';
-import AuthGuard from '../components/shared/AuthGuard'; // استيراد AuthGuard // تأكد من أن المسار صحيح
+import AuthInitializer from '../components/shared/AuthInitializer';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './globals.css';
-
-// هذا المكون هو "مراقب المصادقة" الجديد والمبسط
-const AuthInitializer = ({ children }) => {
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    // عند تحميل التطبيق، حاول استعادة حالة المصادقة من localStorage
-    dispatch(rehydrateAuth());
-  }, [dispatch]);
-
-  return <AuthGuard>{children}</AuthGuard>;
-};
 
 export default function RootLayout({ children }) {
   return (

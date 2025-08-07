@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { fetchCurrentUser, clearNetworkError } from '@/store/slices/authSlice';
+
 import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
 
 export default function NetworkStatus() {
@@ -15,9 +15,7 @@ export default function NetworkStatus() {
     const handleOnline = () => {
       setIsOnline(true);
       // إذا كان هناك خطأ شبكة وتم حل مشكلة الاتصال، نحاول إعادة المحاولة
-      if (networkError) {
-        dispatch(clearNetworkError());
-      }
+      
     };
     const handleOffline = () => setIsOnline(false);
 
@@ -35,9 +33,8 @@ export default function NetworkStatus() {
     
     setIsRetrying(true);
     try {
-      if (isAuthenticated) {
-        await dispatch(fetchCurrentUser()).unwrap();
-      }
+      // لا يوجد إجراء محدد هنا لإعادة المحاولة بعد إزالة fetchCurrentUser
+      // يمكن إضافة منطق لإعادة محاولة الاتصال بالخادم إذا لزم الأمر
     } catch (error) {
       console.error('فشل في إعادة المحاولة:', error);
     } finally {

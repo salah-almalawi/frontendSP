@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { loginUser } from '@/store/slices/authSlice';
+import { loginUser, _resetAuthState } from '@/store/slices/authSlice';
 import NotificationService from '@/services/notificationService';
 import { Shield, User, Lock, Eye, EyeOff } from 'lucide-react';
 import styles from './page.module.css';
@@ -27,7 +27,9 @@ export default function LoginPage() {
     // useEffect لعرض الأخطاء من Redux store
     useEffect(() => {
         if (error) {
-            console.log('Error detected in Redux store:', error); // إضافة console.log
+            if (process.env.NODE_ENV === 'development') {
+                console.log('Error detected in Redux store:', error); // إضافة console.log
+            }
             NotificationService.showError('خطأ في تسجيل الدخول', error);
         }
     }, [error]);
@@ -45,20 +47,24 @@ export default function LoginPage() {
         }
 
         // تنظيف أي توكن قديم قبل محاولة تسجيل الدخول
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        dispatch(logout());
+        
 
-        console.log('Attempting login for user:', username);
+        if (process.env.NODE_ENV === 'development') {
+            console.log('Attempting login for user:', username);
+        }
         const resultAction = await dispatch(loginUser({ username, password }));
 
         // التحقق من نجاح تسجيل الدخول وإعادة التوجيه
         if (loginUser.fulfilled.match(resultAction)) {
+            if (process.env.NODE_ENV === 'development') {
             console.log('Login successful, redirecting to dashboard.');
+        }
             router.push('/dashboard');
         } else if (loginUser.rejected.match(resultAction)) {
-            console.log('Login failed, resultAction:', resultAction);
-            dispatch(logout()); // تأكيد تنظيف حالة Redux في حالة الفشل
+            if (process.env.NODE_ENV === 'development') {
+                console.log('Login failed, resultAction:', resultAction);
+            }
+            dispatch(_resetAuthState()); // تأكيد تنظيف حالة Redux في حالة الفشل
             NotificationService.showLoginError(resultAction.payload || 'فشل تسجيل الدخول');
         }
     };

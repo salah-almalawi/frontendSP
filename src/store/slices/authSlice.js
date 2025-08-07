@@ -5,120 +5,141 @@ import apiClient from '@/lib/axios'; // استخدام النسخة المُعد
 // هذا سيقوم بإدارة طلب API وتحديث الحالة بناءً على النتيجة (pending, fulfilled, rejected)
 export const loginUser = createAsyncThunk(
   'auth/login',
-  async (credentials, { rejectWithValue }) => {
+  async (credentials, { rejectWithValue, dispatch }) => {
     try {
-      // استدعاء API لتسجيل الدخول باستخدام النسخة المُعدة
       const response = await apiClient.post('/auth/login', credentials);
-      console.log("Server response data:", response.data); // طباعة استجابة الخادم بالكامل
-      const { token } = response.data; // استخراج التوكن فقط
-
-      // التحقق من وجود التوكن - إذا لم يكن موجود، فشل تسجيل الدخول
-      if (!token) {
-        return rejectWithValue('بيانات تسجيل الدخول غير صحيحة');
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Server response data:", response.data);
       }
-
-      // بما أن معلومات المستخدم لا تظهر في الاستجابة، سنفترض أنها غير متوفرة هنا
-      // يمكنك تعديل هذا لاحقًا إذا كان الخادم يرسل معلومات المستخدم تحت مفتاح آخر
-      const user = null;
-
-      // حفظ التوكن في localStorage لضمان بقاء الجلسة
-      localStorage.setItem('token', token); // استخدام token
-      localStorage.setItem('user', JSON.stringify(user)); // حفظ user (سيكون null حاليًا)
-      console.log("Stored in localStorage - token:", localStorage.getItem('token'), "user:", localStorage.getItem('user'));
-
-      // إرجاع البيانات ليتم حفظها في حالة Redux
-      return { token: token, user: user }; // إرجاع token و user
+      // لا نقوم بتخزين التوكن في localStorage بعد الآن، الخادم يرسله في HTTP-only cookie
+      // بعد تسجيل الدخول بنجاح، نقوم بالتحقق من حالة المصادقة لجلب بيانات المستخدم
+      await dispatch(checkAuthStatus());
+      return response.data;
     } catch (error) {
-      // في حالة حدوث خطأ، قم بإرجاع رسالة الخطأ
       return rejectWithValue(error.response?.data?.message || 'فشل تسجيل الدخول');
+    }
+  }
+);
+
+export const logoutUser = createAsyncThunk(
+  'auth/logout',
+  async (_, { rejectWithValue }) => {
+    try {
+      await apiClient.post('/auth/logout');
+      return true;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'فشل تسجيل الخروج');
+    }
+  }
+);
+
+export const checkAuthStatus = createAsyncThunk(
+  'auth/checkStatus',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await apiClient.get('/auth/me'); // endpoint to get current user data
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Auth status check response:", response.data);
+      }
+      return response.data.user; // Assuming the backend returns { user: userData }
+    } catch (error) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Auth status check failed:", error.response?.data?.message || error.message);
+      }
+      return rejectWithValue(error.response?.data?.message || 'فشل التحقق من حالة المصادقة');
     }
   }
 );
 
 const initialState = {
   user: null,
-  token: null,
   isAuthenticated: false,
   loading: false,
   error: null,
-  initialized: false, // إضافة حالة التهيئة
+  initialized: false,
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    // أكشن لتسجيل الخروج
-    logout: (state) => {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      state.user = null;
-      state.token = null;
-      state.isAuthenticated = false;
-      state.error = null;
-    },
-    // أكشن لتحميل بيانات المستخدم من localStorage عند بدء التطبيق
-    rehydrateAuth: (state) => {
-      console.log("Rehydrating auth state...");
-      const token = localStorage.getItem('token');
-      const userString = localStorage.getItem('user');
-
-      console.log("localStorage token:", token);
-      console.log("localStorage userString:", userString);
-
-      let user = null;
-      // التحقق مما إذا كانت القيمة موجودة وليست السلسلة النصية "undefined" أو "null"
-      if (userString && userString !== 'undefined' && userString !== 'null') {
-        try {
-          user = JSON.parse(userString);
-          console.log("Parsed user:", user);
-        } catch (e) {
-          console.error("Error parsing user from localStorage:", e);
-          localStorage.removeItem('user');
-        }
-      }
-
-      if (token) { // الشرط يعتمد فقط على وجود التوكن
-        state.token = token;
-        state.isAuthenticated = true;
-        state.user = user; // تعيين user (قد يكون null إذا لم يتم إرساله من الخادم)
-      } else {
-        // إذا لم يكن هناك توكن، تأكد من أن حالة المصادقة خاطئة
-        state.isAuthenticated = false;
-        state.user = null;
-        state.token = null;
-      }
-      state.initialized = true; // تحديث حالة التهيئة
-      console.log("Auth state after rehydration: isAuthenticated=", state.isAuthenticated, ", initialized=", state.initialized, ", user=", state.user);
-    },
-    // أكشن لحذف الأخطاء
     clearError: (state) => {
       state.error = null;
     },
+    // هذا reducer سيتم استدعاؤه داخليًا بعد تسجيل الخروج من قبل thunk
+    _resetAuthState: (state) => {
+      state.user = null;
+      state.isAuthenticated = false;
+      state.loading = false;
+      state.error = null;
+      state.initialized = true;
+    },
   },
-  // extraReducers لإدارة الحالات الناتجة عن createAsyncThunk
   extraReducers: (builder) => {
     builder
+      // Login User
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(loginUser.fulfilled, (state, action) => {
+      .addCase(loginUser.fulfilled, (state) => {
         state.loading = false;
-        state.isAuthenticated = true;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
         state.error = null;
+        // isAuthenticated and user will be set by checkAuthStatus
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.isAuthenticated = false;
+        state.user = null;
         state.error = action.payload;
-        console.log('Login rejected, error:', action.payload); // إضافة console.log
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Login rejected, error:', action.payload);
+        }
+      })
+      // Logout User
+      .addCase(logoutUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.loading = false;
+        state.user = null;
+        state.isAuthenticated = false;
+        state.error = null;
+        // Optionally redirect or show success message
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Logout rejected, error:', action.payload);
+        }
+      })
+      // Check Auth Status
+      .addCase(checkAuthStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkAuthStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload;
+        state.error = null;
+        state.initialized = true;
+      })
+      .addCase(checkAuthStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.error = action.payload;
+        state.initialized = true;
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Check auth status rejected, error:', action.payload);
+        }
       });
   },
 });
 
-export const { logout, rehydrateAuth, clearError } = authSlice.actions;
+export const { clearError, _resetAuthState } = authSlice.actions;
 
 export default authSlice.reducer;

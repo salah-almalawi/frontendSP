@@ -1,7 +1,7 @@
 'use client';
 
 import { useAppDispatch } from '@/store/hooks';
-import { logout } from '@/store/slices/authSlice';
+import { logoutUser } from '@/store/slices/authSlice';
 import NotificationService from '@/services/notificationService';
 
 const useLogout = () => {
@@ -9,7 +9,7 @@ const useLogout = () => {
 
   const handleLogout = () => {
     try {
-      dispatch(logout());
+      dispatch(logoutUser());
       NotificationService.showLogoutSuccess();
       // AuthGuard will handle the redirect automatically
     } catch (error) {

@@ -3,9 +3,10 @@ import { API_CONFIG } from '../config/api'; // استيراد إعدادات API
 
 // إنشاء نسخة axios أساسية
 const apiClient = axios.create({
-  baseURL: API_CONFIG.BASE_URL, // استخدام BASE_URL من إعدادات API
+  baseURL: API_CONFIG.BASE_URL,
   timeout: API_CONFIG.TIMEOUT,
   headers: API_CONFIG.HEADERS,
+  withCredentials: true, // تمكين إرسال ملفات تعريف الارتباط (cookies) مع الطلبات
 });
 
 
@@ -14,14 +15,7 @@ const apiClient = axios.create({
 // هذا الكود سيعمل قبل إرسال أي طلب
 apiClient.interceptors.request.use(
   (config) => {
-    // الحصول على التوكن من localStorage مباشرة
-    const token = localStorage.getItem('token');
-
-    // إذا كان التوكن موجودًا، قم بإضافته إلى رأس الطلب
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
+    // لا حاجة لإضافة التوكن يدوياً بعد الآن، المتصفح يرسل الكوكيز تلقائياً
     return config;
   },
   (error) => {
@@ -40,11 +34,10 @@ apiClient.interceptors.response.use(
   (error) => {
     // التحقق مما إذا كان الخطأ هو 401 (غير مصرح به)
     if (error.response && error.response.status === 401) {
-      console.log('401 Unauthorized error detected. Clearing localStorage and redirecting to login.');
-      // إذا حدث خطأ 401، قم بحذف التوكن من localStorage
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('401 Unauthorized error detected. Clearing localStorage and redirecting to login.');
+      }
+      // لا حاجة لحذف التوكن من localStorage بعد الآن
       // إعادة توجيه المستخدم إلى صفحة تسجيل الدخول
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
