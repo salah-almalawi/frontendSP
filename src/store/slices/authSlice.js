@@ -16,7 +16,10 @@ export const loginUser = createAsyncThunk(
       await dispatch(checkAuthStatus());
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'فشل تسجيل الدخول');
+      if (process.env.NODE_ENV === 'development') {
+        console.log("Login error response:", error.response);
+      }
+      return rejectWithValue(error.response?.data?.message || error.message);
     }
   }
 );

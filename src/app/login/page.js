@@ -69,8 +69,8 @@ export default function LoginPage() {
             if (process.env.NODE_ENV === 'development') {
                 console.log('Login failed, resultAction:', resultAction);
             }
-            dispatch(clearError()); // استخدام clearError بدلاً من _resetAuthState لتجنب إعادة التهيئة غير الضرورية
-            NotificationService.showLoginError(resultAction.payload || 'فشل تسجيل الدخول');
+            // يتم التعامل مع عرض الخطأ بواسطة useEffect الذي يراقب حالة الخطأ في Redux store
+            // dispatch(clearError()); // لا حاجة لتنظيف الخطأ هنا، سيتم تنظيفه عند تحميل الصفحة التالية أو عند محاولة تسجيل دخول جديدة
         }
     };
     return (
