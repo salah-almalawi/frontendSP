@@ -18,11 +18,11 @@ export default function LoginPage() {
     const router = useRouter(); // تهيئة useRouter
 
     // useEffect لإعادة التوجيه إذا كان المستخدم مصادقًا بالفعل
-    useEffect(() => {
-        if (isAuthenticated) {
-            // router.replace('/dashboard'); // تم التعليق مؤقتاً لتشخيص مشكلة تحديث الصفحة
-        }
-    }, [isAuthenticated, router]);
+    // useEffect(() => {
+    //     if (isAuthenticated) {
+    //         // router.replace('/dashboard'); // تم التعليق مؤقتاً لتشخيص مشكلة تحديث الصفحة
+    //     }
+    // }, [isAuthenticated, router]);
 
     // useEffect لعرض الأخطاء من Redux store
     useEffect(() => {
