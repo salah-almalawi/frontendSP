@@ -46,7 +46,8 @@ export const checkAuthStatus = createAsyncThunk(
       if (process.env.NODE_ENV === 'development') {
         console.log("Auth status check failed:", error.response?.data?.message || error.message);
       }
-      return rejectWithValue(error.response?.data?.message || 'فشل التحقق من حالة المصادقة');
+      // إضافة تفصيل أكثر لرسالة الخطأ الافتراضية
+      return rejectWithValue(error.response?.data?.message || 'فشل التحقق من حالة المصادقة: قد يكون هناك انقطاع في الاتصال أو انتهاء الجلسة.');
     }
   }
 );

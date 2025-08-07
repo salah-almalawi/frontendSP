@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { loginUser, _resetAuthState } from '@/store/slices/authSlice';
+import { loginUser, clearError } from '@/store/slices/authSlice';
 import NotificationService from '@/services/notificationService';
 import { Shield, User, Lock, Eye, EyeOff } from 'lucide-react';
 import styles from './page.module.css';
@@ -64,7 +64,7 @@ export default function LoginPage() {
             if (process.env.NODE_ENV === 'development') {
                 console.log('Login failed, resultAction:', resultAction);
             }
-            dispatch(_resetAuthState()); // تأكيد تنظيف حالة Redux في حالة الفشل
+            dispatch(clearError()); // استخدام clearError بدلاً من _resetAuthState لتجنب إعادة التهيئة غير الضرورية
             NotificationService.showLoginError(resultAction.payload || 'فشل تسجيل الدخول');
         }
     };
